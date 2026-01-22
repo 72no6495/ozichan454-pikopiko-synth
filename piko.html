@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberTune Synth - Shaking Visuals</title>
+    <style>
+        :root {
+            --bg-grad-start: #0f0c29;
+            --bg-grad-mid: #302b63;
+            --bg-grad-end: #24243e;
+            --primary-color: #00ffcc; /* Cyan for accents */
+            --secondary-color: #d500f9; /* Neon Purple */
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, var(--bg-grad-start), var(--bg-grad-mid), var(--bg-grad-end));
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh; /* 画面が小さい場合のスクロール対応 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            padding: 20px 0; /* 上下の余白 */
+        }
+
+        h1 {
+            text-shadow: 0 0 10px var(--secondary-color);
+            margin: 10px 0;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        /* --- Main Container --- */
+        .synth-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), 0 0 10px var(--secondary-color);
+            width: 95%;
+            max-width: 850px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* --- Visualizer Area (New layout for images and canvas) --- */
+        .visualizer-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            width: 100%;
+            height: 120px;
+        }
+
+        /* Side Images Wrapper */
+        .side-image-wrapper {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%; /* Circular frame */
+            border: 2px solid var(--primary-color);
+            overflow: hidden;
+            box-shadow: 0 0 15px var(--primary-color), inset 0 0 10px #000;
+            flex-shrink: 0; /* Prevent shrinking */
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* The Image Itself */
+        .side-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Smooth transition for shaking effect */
+            transition: transform 0.05s ease-out; 
+            will-change: transform;
+        }
+        
+        /* Placeholder text if image is missing */
+        .side-image-wrapper::after {
+            content: 'No IMG';
+            position: absolute;
+            font-size: 0.6rem;
+            color: #555;
+            z-index: -1;
+        }
+
+
+        /* Canvas Frame (Modified existing) */
+        .visualizer-frame {
+            flex-grow: 1; /* Take remaining space */
+            height: 100%;
+            background: #000;
+            border: 2px solid #333;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px #000;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .screen-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* --- Controls --- */
+        .controls-area {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-size: 0.7rem;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        /* Custom Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            margin: 5px 0;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 14px;
+            width: 14px;
+            border-radius: 50%;
+            background: var(--secondary-color);
+            cursor: pointer;
+            margin-top: -5px;
+            box-shadow: 0 0 8px var(--secondary-color);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            background: #444;
+            border-radius: 2px;
+        }
+
+        select {
+            background: #222;
+            color: #fff;
+            border: 1px solid var(--primary-color);
+            padding: 4px;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.8rem;
+        }
+
+        /* --- Drum Pads --- */
+        .pads-area {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 5px;
+        }
+
+        .pad-btn {
+            background: #333;
+            border: 1px solid var(--border-color);
+            color: var(--primary-color);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8rem;
+            transition: all 0.1s;
+            text-shadow: 0 0 5px var(--primary-color);
+            flex: 1;
+            max-width: 150px;
+        }
+
+        .pad-btn:active {
+            background: var(--primary-color);
+            color: #000;
+            transform: scale(0.97);
+            box-shadow: 0 0 15px var(--primary-color);
+        }
+
+        /* --- Keyboard --- */
+        .keyboard {
+            display: flex;
+            justify-content: center;
+            position: relative;
+            height: 120px;
+            margin-top: 10px;
+        }
+
+        .key {
+            position: relative;
+            flex: 1;
+            max-width: 40px;
+            height: 100%;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 0 0 5px 5px;
+            margin: 0 2px;
+            cursor: pointer;
+            z-index: 1;
+            transition: background 0.1s;
+        }
+
+        .key.black {
+            max-width: 28px;
+            height: 60%;
+            background: #111;
+            border: 1px solid #000;
+            margin-left: -16px;
+            margin-right: -16px;
+            z-index: 2;
+        }
+
+        .key:active, .key.active {
+            background: var(--secondary-color);
+            box-shadow: 0 0 15px var(--secondary-color);
+            transform: translateY(2px);
+        }
+        .key.black:active, .key.black.active {
+            background: var(--primary-color);
+            box-shadow: 0 0 15px var(--primary-color);
+        }
+
+        /* Overlay for "Click to Start" */
+        #start-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+        }
+        #start-overlay h2 {
+            color: var(--primary-color);
+            animation: pulse 1.5s infinite;
+            font-size: 2rem;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; text-shadow: 0 0 10px var(--primary-color); }
+            50% { opacity: 1; text-shadow: 0 0 30px var(--primary-color), 0 0 10px #fff; }
+            100% { opacity: 0.6; text-shadow: 0 0 10px var(--primary-color); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .side-image-wrapper {
+                width: 50px;
+                height: 50px;
+                border-width: 1px;
+            }
+            .visualizer-container {
+                gap: 8px;
+                height: 90px;
+            }
+            .controls-area { grid-template-columns: 1fr 1fr; }
+            .keyboard { height: 100px; }
+            h1 { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-overlay">
+        <h2>CLICK TO START</h2>
+        <p>Sound & Shaking Visuals Init</p>
+    </div>
+
+    <h1>OZICHAN454 PIKOPIKO SYNTH</h1>
+
+    <div class="synth-container">
+        
+        <div class="visualizer-container">
+            <div class="side-image-wrapper left">
+                <img src="profile.jpg" alt="Profile L" class="side-image" id="img-left" onerror="this.style.display='none'">
+            </div>
+
+            <div class="visualizer-frame">
+                <canvas id="visualizer"></canvas>
+                <div class="screen-overlay"></div>
+            </div>
+
+            <div class="side-image-wrapper right">
+                <img src="profile.jpg" alt="Profile R" class="side-image" id="img-right" onerror="this.style.display='none'">
+            </div>
+        </div>
+
+        <div class="controls-area">
+            <div class="control-group">
+                <label for="waveform">Waveform</label>
+                <select id="waveform">
+                    <option value="square">Square (8bit)</option>
+                    <option value="sawtooth">Sawtooth (Sharp)</option>
+                    <option value="triangle">Triangle (Soft)</option>
+                    <option value="sine">Sine (Pure)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="volume">Master Vol</label>
+                <input type="range" id="volume" min="0" max="1" step="0.01" value="0.4">
+            </div>
+
+            <div class="control-group">
+                <label for="detune">Detune (Thick)</label>
+                <input type="range" id="detune" min="0" max="50" step="1" value="5">
+            </div>
+
+            <div class="control-group">
+                <label for="attack">Attack (Fade In)</label>
+                <input type="range" id="attack" min="0.001" max="1" step="0.005" value="0.02">
+            </div>
+
+            <div class="control-group">
+                <label for="decay">Release (Fade Out)</label>
+                <input type="range" id="decay" min="0.1" max="3" step="0.1" value="0.5">
+            </div>
+        </div>
+
+        <div class="pads-area">
+            <button class="pad-btn" id="btn-kick">KICK (Bass)</button>
+            <button class="pad-btn" id="btn-crash">CRASH (Noise)</button>
+        </div>
+
+        <div class="keyboard" id="keyboard">
+            </div>
+        <div style="text-align:center; font-size: 0.6rem; color: #888; margin-top:5px;">
+            PC Keys: Z S X D C V G B H N J M , (Shift=High Octave)
+        </div>
+    </div>
+
+    <script>
+        /**
+         * CYBERTUNE SYNTH ENGINE V2
+         */
+
+        // 1. Setup & Elements
+        let audioCtx, masterGain, analyser, isInit = false;
+        const canvas = document.getElementById('visualizer');
+        const canvasCtx = canvas.getContext('2d');
+        
+        // Image Elements for Shaking
+        const imgLeft = document.getElementById('img-left');
+        const imgRight = document.getElementById('img-right');
+
+        const volumeSlider = document.getElementById('volume');
+        const waveformSelect = document.getElementById('waveform');
+        const detuneSlider = document.getElementById('detune');
+        const attackSlider = document.getElementById('attack');
+        const decaySlider = document.getElementById('decay');
+        
+        // Keyboard Data
+        const notes = [
+            { note: 'C', type: 'white', freq: 261.63, key: 'z' },
+            { note: 'C#', type: 'black', freq: 277.18, key: 's' },
+            { note: 'D', type: 'white', freq: 293.66, key: 'x' },
+            { note: 'D#', type: 'black', freq: 311.13, key: 'd' },
+            { note: 'E', type: 'white', freq: 329.63, key: 'c' },
+            { note: 'F', type: 'white', freq: 349.23, key: 'v' },
+            { note: 'F#', type: 'black', freq: 369.99, key: 'g' },
+            { note: 'G', type: 'white', freq: 392.00, key: 'b' },
+            { note: 'G#', type: 'black', freq: 415.30, key: 'h' },
+            { note: 'A', type: 'white', freq: 440.00, key: 'n' },
+            { note: 'A#', type: 'black', freq: 466.16, key: 'j' },
+            { note: 'B', type: 'white', freq: 493.88, key: 'm' },
+            { note: 'C5', type: 'white', freq: 523.25, key: ',' }
+        ];
+        const keyMap = {};
+        notes.forEach(n => keyMap[n.key] = n.freq);
+
+
+        // --- Initialization ---
+        function initAudio() {
+            if (isInit) return;
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+
+            masterGain = audioCtx.createGain();
+            masterGain.gain.value = volumeSlider.value;
+
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 2048; // 波形描画用解像度
+
+            masterGain.connect(analyser);
+            analyser.connect(audioCtx.destination);
+
+            isInit = true;
+            document.getElementById('start-overlay').style.opacity = '0';
+            setTimeout(() => document.getElementById('start-overlay').style.display = 'none', 500);
+            
+            drawVisualizerAndShake(); // Start loop
+        }
+
+
+        // --- Sound Generation (Synth) ---
+        function playNote(freq) {
+            if (!isInit) initAudio();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            osc.type = waveformSelect.value;
+            osc.frequency.setValueAtTime(freq, now);
+
+            let osc2 = null;
+            let detuneVal = parseInt(detuneSlider.value);
+            if (detuneVal > 0) {
+                osc2 = audioCtx.createOscillator();
+                osc2.type = waveformSelect.value;
+                osc2.frequency.setValueAtTime(freq, now);
+                osc2.detune.value = detuneVal; // Cents
+                osc2.start(now);
+            }
+
+            const noteGain = audioCtx.createGain();
+            const attack = parseFloat(attackSlider.value);
+            
+            noteGain.gain.setValueAtTime(0, now);
+            // 通常より少し急峻なカーブでアタック感を出す
+            noteGain.gain.setTargetAtTime(1, now, attack / 3);
+            
+            osc.connect(noteGain);
+            if (osc2) osc2.connect(noteGain);
+            noteGain.connect(masterGain);
+            osc.start(now);
+
+            return { osc, osc2, noteGain };
+        }
+
+        function stopNote(noteObj) {
+            if (!noteObj || !noteObj.noteGain) return;
+            const now = audioCtx.currentTime;
+            const release = parseFloat(decaySlider.value);
+
+            // Cancel current scheduled changes
+            noteObj.noteGain.gain.cancelScheduledValues(now);
+            // Set current value explicitly before ramping down
+            noteObj.noteGain.gain.setValueAtTime(noteObj.noteGain.gain.value, now);
+            // Smooth release
+            noteObj.noteGain.gain.exponentialRampToValueAtTime(0.001, now + release);
+
+            const stopTime = now + release + 0.1;
+            noteObj.osc.stop(stopTime);
+            if (noteObj.osc2) noteObj.osc2.stop(stopTime);
+        }
+
+
+        // --- Sound Generation (Drums) ---
+        function playKick() {
+            if (!isInit) initAudio();
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.frequency.setValueAtTime(180, now);
+            osc.frequency.exponentialRampToValueAtTime(0.01, now + 0.4);
+            gain.gain.setValueAtTime(1.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+            osc.start(now);
+            osc.stop(now + 0.4);
+        }
+
+        function playCrash() {
+            if (!isInit) initAudio();
+            const now = audioCtx.currentTime;
+            const bufferSize = audioCtx.sampleRate * 1.5;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'highpass';
+            filter.frequency.value = 1200;
+            const gain = audioCtx.createGain();
+            noise.connect(filter).connect(gain).connect(masterGain);
+            gain.gain.setValueAtTime(1, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+            noise.start(now);
+        }
+
+
+        // --- Visualizer & Shaking Logic (統合) ---
+        function drawVisualizerAndShake() {
+            requestAnimationFrame(drawVisualizerAndShake);
+
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            analyser.getByteTimeDomainData(dataArray); // 波形データ取得 (0-255, 中心128)
+
+            // --- 1. 画像振動の計算 ---
+            let sumAmplitude = 0;
+            for (let i = 0; i < bufferLength; i++) {
+                // 中心(128)からの振幅の絶対値を合計
+                sumAmplitude += Math.abs(dataArray[i] - 128);
+            }
+            // 平均振幅を計算 (大体 0〜60 くらいの範囲になることが多い)
+            const avgAmplitude = sumAmplitude / bufferLength;
+
+            // 振動の強さ係数 (好みで調整)
+            const shakeIntensity = avgAmplitude * 0.3; 
+            // 拡大係数 (音が大きいと少し大きくなる)
+            const scaleFactor = 1 + (avgAmplitude / 128) * 0.15;
+
+            // ランダムな振動オフセット (-1 から 1 の乱数 * 強さ)
+            const xOff = (Math.random() * 2 - 1) * shakeIntensity;
+            const yOff = (Math.random() * 2 - 1) * shakeIntensity;
+
+            // CSS transform を適用
+            // 左画像: そのまま適用
+            imgLeft.style.transform = `translate(${xOff.toFixed(1)}px, ${yOff.toFixed(1)}px) scale(${scaleFactor.toFixed(2)})`;
+            // 右画像: 動きを少し反転させて左右対称感を出す
+            imgRight.style.transform = `translate(${-xOff.toFixed(1)}px, ${-yOff.toFixed(1)}px) scale(${scaleFactor.toFixed(2)})`;
+
+            // --- 2. キャンバス波形描画 ---
+            const width = canvas.width = canvas.parentElement.offsetWidth;
+            const height = canvas.height = canvas.parentElement.offsetHeight;
+            
+            canvasCtx.fillStyle = 'rgba(0, 0, 0, 0.25)'; // 残像効果
+            canvasCtx.fillRect(0, 0, width, height);
+            canvasCtx.lineWidth = 2;
+            canvasCtx.strokeStyle = '#00ffcc';
+            canvasCtx.shadowBlur = 8;
+            canvasCtx.shadowColor = '#00ffcc';
+            canvasCtx.beginPath();
+
+            const sliceWidth = width * 1.0 / bufferLength;
+            let x = 0;
+            for(let i = 0; i < bufferLength; i++) {
+                const v = dataArray[i] / 128.0;
+                const y = v * height / 2;
+                if(i === 0) canvasCtx.moveTo(x, y);
+                else canvasCtx.lineTo(x, y);
+                x += sliceWidth;
+            }
+            canvasCtx.lineTo(width, height/2);
+            canvasCtx.stroke();
+        }
+
+
+        // --- Input Handling ---
+        volumeSlider.addEventListener('input', (e) => { if(masterGain) masterGain.gain.value = e.target.value; });
+
+        // Generate Keyboard UI
+        const keyboardDiv = document.getElementById('keyboard');
+        notes.forEach(n => {
+            const k = document.createElement('div');
+            k.className = `key ${n.type}`;
+            k.dataset.key = n.key;
+            
+            const start = (e) => { e.preventDefault(); k.classList.add('active'); k.activeTone = playNote(n.freq); };
+            const end = (e) => { e.preventDefault(); k.classList.remove('active'); stopNote(k.activeTone); };
+
+            k.addEventListener('mousedown', start);
+            k.addEventListener('mouseup', end);
+            k.addEventListener('mouseleave', end);
+            k.addEventListener('touchstart', start, {passive:false});
+            k.addEventListener('touchend', end, {passive:false});
+            keyboardDiv.appendChild(k);
+        });
+
+        // Physical Keyboard
+        let activeKeys = {};
+        document.addEventListener('keydown', (e) => {
+            if (!isInit || e.repeat) return;
+            const key = e.key.toLowerCase();
+            if (keyMap[key]) {
+                const domKey = document.querySelector(`.key[data-key="${key}"]`);
+                if(domKey) domKey.classList.add('active');
+                let freq = keyMap[key];
+                if (e.shiftKey) freq *= 2;
+                activeKeys[key] = playNote(freq);
+            }
+        });
+        document.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            if (activeKeys[key]) {
+                stopNote(activeKeys[key]);
+                const domKey = document.querySelector(`.key[data-key="${key}"]`);
+                if(domKey) domKey.classList.remove('active');
+                delete activeKeys[key];
+            }
+        });
+
+        // Drums
+        const kickBtn = document.getElementById('btn-kick');
+        const crashBtn = document.getElementById('btn-crash');
+        kickBtn.addEventListener('mousedown', playKick);
+        crashBtn.addEventListener('mousedown', playCrash);
+        kickBtn.addEventListener('touchstart', (e)=>{e.preventDefault();playKick()}, {passive:false});
+        crashBtn.addEventListener('touchstart', (e)=>{e.preventDefault();playCrash()}, {passive:false});
+
+        // Start Click
+        document.getElementById('start-overlay').addEventListener('click', initAudio);
+
+    </script>
+</body>
+</html>
