@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ozichan454-pikopiko-synth</title>
+    <title>ozichan454-pikopiko-synth v2</title>
     <style>
         :root {
             --bg-grad-start: #0f0c29;
@@ -21,13 +21,13 @@
             background: linear-gradient(135deg, var(--bg-grad-start), var(--bg-grad-mid), var(--bg-grad-end));
             color: #fff;
             font-family: 'Courier New', monospace;
-            min-height: 100vh; /* 画面が小さい場合のスクロール対応 */
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             user-select: none;
-            padding: 20px 0; /* 上下の余白 */
+            padding: 20px 0;
         }
 
         h1 {
@@ -53,7 +53,7 @@
             gap: 15px;
         }
 
-        /* --- Visualizer Area (New layout for images and canvas) --- */
+        /* --- Visualizer Area --- */
         .visualizer-container {
             display: flex;
             align-items: center;
@@ -63,15 +63,14 @@
             height: 120px;
         }
 
-        /* Side Images Wrapper */
         .side-image-wrapper {
             width: 80px;
             height: 80px;
-            border-radius: 50%; /* Circular frame */
+            border-radius: 50%;
             border: 2px solid var(--primary-color);
             overflow: hidden;
             box-shadow: 0 0 15px var(--primary-color), inset 0 0 10px #000;
-            flex-shrink: 0; /* Prevent shrinking */
+            flex-shrink: 0;
             background: #000;
             display: flex;
             justify-content: center;
@@ -79,17 +78,14 @@
             position: relative;
         }
 
-        /* The Image Itself */
         .side-image {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            /* Smooth transition for shaking effect */
             transition: transform 0.05s ease-out; 
             will-change: transform;
         }
         
-        /* Placeholder text if image is missing */
         .side-image-wrapper::after {
             content: 'No IMG';
             position: absolute;
@@ -98,10 +94,8 @@
             z-index: -1;
         }
 
-
-        /* Canvas Frame (Modified existing) */
         .visualizer-frame {
-            flex-grow: 1; /* Take remaining space */
+            flex-grow: 1;
             height: 100%;
             background: #000;
             border: 2px solid #333;
@@ -148,7 +142,6 @@
             white-space: nowrap;
         }
 
-        /* Custom Slider Styling */
         input[type=range] {
             -webkit-appearance: none;
             width: 100%;
@@ -180,6 +173,10 @@
             border-radius: 4px;
             font-family: inherit;
             font-size: 0.8rem;
+            cursor: pointer;
+        }
+        select:hover {
+            box-shadow: 0 0 5px var(--primary-color);
         }
 
         /* --- Drum Pads --- */
@@ -255,7 +252,7 @@
             box-shadow: 0 0 15px var(--primary-color);
         }
 
-        /* Overlay for "Click to Start" */
+        /* Overlay */
         #start-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -280,12 +277,10 @@
             100% { opacity: 0.6; text-shadow: 0 0 10px var(--primary-color); }
         }
 
-        /* Responsive adjustments */
         @media (max-width: 600px) {
             .side-image-wrapper {
                 width: 50px;
                 height: 50px;
-                border-width: 1px;
             }
             .visualizer-container {
                 gap: 8px;
@@ -301,16 +296,16 @@
 
     <div id="start-overlay">
         <h2>CLICK TO START</h2>
-        <p>Sound & Shaking Visuals Init</p>
+        <p>Sound & Advanced Visuals Init</p>
     </div>
 
-    <h1>OZICHAN454 PIKOPIKO SYNTH</h1>
+    <h1>OZICHAN454 PIKOPIKO SYNTH V2</h1>
 
     <div class="synth-container">
         
         <div class="visualizer-container">
             <div class="side-image-wrapper left">
-                <img src="profile.jpg" alt="Profile L" class="side-image" id="img-left" onerror="this.style.display='none'">
+                <img src="profile.jpg" alt="L" class="side-image" id="img-left" onerror="this.style.display='none'">
             </div>
 
             <div class="visualizer-frame">
@@ -319,11 +314,21 @@
             </div>
 
             <div class="side-image-wrapper right">
-                <img src="profile.jpg" alt="Profile R" class="side-image" id="img-right" onerror="this.style.display='none'">
+                <img src="profile.jpg" alt="R" class="side-image" id="img-right" onerror="this.style.display='none'">
             </div>
         </div>
 
         <div class="controls-area">
+            <div class="control-group">
+                <label for="visualizer-mode">Visual Mode</label>
+                <select id="visualizer-mode">
+                    <option value="wave">Neon Wave (Line)</option>
+                    <option value="bars">Spectrum Bars</option>
+                    <option value="circle">Cyber Circle</option>
+                    <option value="symmetry">Symmetry (Trippy)</option>
+                </select>
+            </div>
+
             <div class="control-group">
                 <label for="waveform">Waveform</label>
                 <select id="waveform">
@@ -340,17 +345,17 @@
             </div>
 
             <div class="control-group">
-                <label for="detune">Detune (Thick)</label>
+                <label for="detune">Detune</label>
                 <input type="range" id="detune" min="0" max="50" step="1" value="5">
             </div>
 
             <div class="control-group">
-                <label for="attack">Attack (Fade In)</label>
+                <label for="attack">Attack</label>
                 <input type="range" id="attack" min="0.001" max="1" step="0.005" value="0.02">
             </div>
 
             <div class="control-group">
-                <label for="decay">Release (Fade Out)</label>
+                <label for="decay">Release</label>
                 <input type="range" id="decay" min="0.1" max="3" step="0.1" value="0.5">
             </div>
         </div>
@@ -360,8 +365,7 @@
             <button class="pad-btn" id="btn-crash">CRASH (Noise)</button>
         </div>
 
-        <div class="keyboard" id="keyboard">
-            </div>
+        <div class="keyboard" id="keyboard"></div>
         <div style="text-align:center; font-size: 0.6rem; color: #888; margin-top:5px;">
             PC Keys: Z S X D C V G B H N J M , (Shift=High Octave)
         </div>
@@ -369,7 +373,7 @@
 
     <script>
         /**
-         * CYBERTUNE SYNTH ENGINE V2
+         * CYBERTUNE SYNTH ENGINE V2 + ADVANCED VISUALIZER
          */
 
         // 1. Setup & Elements
@@ -377,10 +381,12 @@
         const canvas = document.getElementById('visualizer');
         const canvasCtx = canvas.getContext('2d');
         
-        // Image Elements for Shaking
+        // Image Elements
         const imgLeft = document.getElementById('img-left');
         const imgRight = document.getElementById('img-right');
 
+        // UI Controls
+        const visualizerSelect = document.getElementById('visualizer-mode');
         const volumeSlider = document.getElementById('volume');
         const waveformSelect = document.getElementById('waveform');
         const detuneSlider = document.getElementById('detune');
@@ -406,7 +412,6 @@
         const keyMap = {};
         notes.forEach(n => keyMap[n.key] = n.freq);
 
-
         // --- Initialization ---
         function initAudio() {
             if (isInit) return;
@@ -417,7 +422,7 @@
             masterGain.gain.value = volumeSlider.value;
 
             analyser = audioCtx.createAnalyser();
-            analyser.fftSize = 2048; // 波形描画用解像度
+            analyser.fftSize = 2048; // Resolution
 
             masterGain.connect(analyser);
             analyser.connect(audioCtx.destination);
@@ -426,9 +431,8 @@
             document.getElementById('start-overlay').style.opacity = '0';
             setTimeout(() => document.getElementById('start-overlay').style.display = 'none', 500);
             
-            drawVisualizerAndShake(); // Start loop
+            drawLoop(); 
         }
-
 
         // --- Sound Generation (Synth) ---
         function playNote(freq) {
@@ -446,7 +450,7 @@
                 osc2 = audioCtx.createOscillator();
                 osc2.type = waveformSelect.value;
                 osc2.frequency.setValueAtTime(freq, now);
-                osc2.detune.value = detuneVal; // Cents
+                osc2.detune.value = detuneVal; 
                 osc2.start(now);
             }
 
@@ -454,7 +458,6 @@
             const attack = parseFloat(attackSlider.value);
             
             noteGain.gain.setValueAtTime(0, now);
-            // 通常より少し急峻なカーブでアタック感を出す
             noteGain.gain.setTargetAtTime(1, now, attack / 3);
             
             osc.connect(noteGain);
@@ -470,18 +473,14 @@
             const now = audioCtx.currentTime;
             const release = parseFloat(decaySlider.value);
 
-            // Cancel current scheduled changes
             noteObj.noteGain.gain.cancelScheduledValues(now);
-            // Set current value explicitly before ramping down
             noteObj.noteGain.gain.setValueAtTime(noteObj.noteGain.gain.value, now);
-            // Smooth release
             noteObj.noteGain.gain.exponentialRampToValueAtTime(0.001, now + release);
 
             const stopTime = now + release + 0.1;
             noteObj.osc.stop(stopTime);
             if (noteObj.osc2) noteObj.osc2.stop(stopTime);
         }
-
 
         // --- Sound Generation (Drums) ---
         function playKick() {
@@ -519,61 +518,215 @@
             noise.start(now);
         }
 
+        // --- Visualizer Logic ---
 
-        // --- Visualizer & Shaking Logic (統合) ---
-        function drawVisualizerAndShake() {
-            requestAnimationFrame(drawVisualizerAndShake);
+        function drawLoop() {
+            requestAnimationFrame(drawLoop);
 
             const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-            analyser.getByteTimeDomainData(dataArray); // 波形データ取得 (0-255, 中心128)
+            // 振動計算用（常にTimeDomainDataが必要）
+            const dataArrayTime = new Uint8Array(bufferLength);
+            analyser.getByteTimeDomainData(dataArrayTime);
 
-            // --- 1. 画像振動の計算 ---
-            let sumAmplitude = 0;
-            for (let i = 0; i < bufferLength; i++) {
-                // 中心(128)からの振幅の絶対値を合計
-                sumAmplitude += Math.abs(dataArray[i] - 128);
-            }
-            // 平均振幅を計算 (大体 0〜60 くらいの範囲になることが多い)
-            const avgAmplitude = sumAmplitude / bufferLength;
+            // 1. Shaking Logic (共通)
+            applyShakeEffect(dataArrayTime);
 
-            // 振動の強さ係数 (好みで調整)
-            const shakeIntensity = avgAmplitude * 0.3; 
-            // 拡大係数 (音が大きいと少し大きくなる)
-            const scaleFactor = 1 + (avgAmplitude / 128) * 0.15;
-
-            // ランダムな振動オフセット (-1 から 1 の乱数 * 強さ)
-            const xOff = (Math.random() * 2 - 1) * shakeIntensity;
-            const yOff = (Math.random() * 2 - 1) * shakeIntensity;
-
-            // CSS transform を適用
-            // 左画像: そのまま適用
-            imgLeft.style.transform = `translate(${xOff.toFixed(1)}px, ${yOff.toFixed(1)}px) scale(${scaleFactor.toFixed(2)})`;
-            // 右画像: 動きを少し反転させて左右対称感を出す
-            imgRight.style.transform = `translate(${-xOff.toFixed(1)}px, ${-yOff.toFixed(1)}px) scale(${scaleFactor.toFixed(2)})`;
-
-            // --- 2. キャンバス波形描画 ---
+            // 2. Clear Canvas
             const width = canvas.width = canvas.parentElement.offsetWidth;
             const height = canvas.height = canvas.parentElement.offsetHeight;
             
-            canvasCtx.fillStyle = 'rgba(0, 0, 0, 0.25)'; // 残像効果
+            // 残像効果
+            canvasCtx.fillStyle = 'rgba(0, 0, 0, 0.2)'; 
             canvasCtx.fillRect(0, 0, width, height);
-            canvasCtx.lineWidth = 2;
+
+            // 3. Draw Selected Visualizer
+            const mode = visualizerSelect.value;
+            
+            if (mode === 'wave') {
+                drawWaveform(dataArrayTime, width, height);
+            } else if (mode === 'bars') {
+                const dataArrayFreq = new Uint8Array(bufferLength);
+                analyser.getByteFrequencyData(dataArrayFreq);
+                drawSpectrumBars(dataArrayFreq, width, height);
+            } else if (mode === 'circle') {
+                const dataArrayFreq = new Uint8Array(bufferLength);
+                analyser.getByteFrequencyData(dataArrayFreq);
+                drawCyberCircle(dataArrayFreq, width, height, dataArrayTime);
+            } else if (mode === 'symmetry') {
+                drawSymmetry(dataArrayTime, width, height);
+            }
+        }
+
+        // --- Shaking Effect Implementation ---
+        function applyShakeEffect(dataArray) {
+            let sum = 0;
+            for (let i = 0; i < dataArray.length; i++) {
+                sum += Math.abs(dataArray[i] - 128);
+            }
+            const avg = sum / dataArray.length;
+            const shakeIntensity = avg * 0.3; 
+            const scaleFactor = 1 + (avg / 128) * 0.15;
+
+            const xOff = (Math.random() * 2 - 1) * shakeIntensity;
+            const yOff = (Math.random() * 2 - 1) * shakeIntensity;
+
+            const transformStyle = `translate(${xOff.toFixed(1)}px, ${yOff.toFixed(1)}px) scale(${scaleFactor.toFixed(2)})`;
+            
+            imgLeft.style.transform = transformStyle;
+            imgRight.style.transform = `translate(${-xOff.toFixed(1)}px, ${-yOff.toFixed(1)}px) scale(${scaleFactor.toFixed(2)})`;
+        }
+
+        // --- Drawing Algorithms ---
+
+        // Mode 1: Neon Wave (Original + Glow)
+        function drawWaveform(data, w, h) {
+            canvasCtx.lineWidth = 3;
             canvasCtx.strokeStyle = '#00ffcc';
-            canvasCtx.shadowBlur = 8;
+            canvasCtx.shadowBlur = 15;
             canvasCtx.shadowColor = '#00ffcc';
             canvasCtx.beginPath();
 
-            const sliceWidth = width * 1.0 / bufferLength;
+            const sliceWidth = w * 1.0 / data.length;
             let x = 0;
-            for(let i = 0; i < bufferLength; i++) {
-                const v = dataArray[i] / 128.0;
-                const y = v * height / 2;
-                if(i === 0) canvasCtx.moveTo(x, y);
+
+            for (let i = 0; i < data.length; i++) {
+                const v = data[i] / 128.0;
+                const y = v * h / 2;
+                if (i === 0) canvasCtx.moveTo(x, y);
                 else canvasCtx.lineTo(x, y);
                 x += sliceWidth;
             }
-            canvasCtx.lineTo(width, height/2);
+            canvasCtx.lineTo(w, h / 2);
+            canvasCtx.stroke();
+        }
+
+        // Mode 2: Spectrum Bars
+        function drawSpectrumBars(data, w, h) {
+            const barCount = 64; // 間引きして表示
+            const step = Math.floor(data.length / barCount);
+            const barWidth = (w / barCount) - 2;
+
+            for (let i = 0; i < barCount; i++) {
+                const value = data[i * step];
+                const percent = value / 255;
+                const barHeight = percent * h;
+                
+                // Color Gradient based on height
+                const hue = 180 + (percent * 120); // Cyan to Purple
+                canvasCtx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                canvasCtx.shadowBlur = 10;
+                canvasCtx.shadowColor = `hsl(${hue}, 100%, 50%)`;
+
+                canvasCtx.fillRect(i * (barWidth + 2), h - barHeight, barWidth, barHeight);
+            }
+        }
+
+        // Mode 3: Cyber Circle
+        function drawCyberCircle(data, w, h, timeData) {
+            const cx = w / 2;
+            const cy = h / 2;
+            const radius = Math.min(w, h) / 3.5;
+
+            // Base Circle
+            canvasCtx.beginPath();
+            canvasCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+            canvasCtx.strokeStyle = 'rgba(255,255,255,0.1)';
+            canvasCtx.stroke();
+
+            // Frequency bars radiating out
+            const barCount = 40;
+            const step = Math.floor(data.length / barCount);
+            
+            for (let i = 0; i < barCount; i++) {
+                const value = data[i * step];
+                const percent = value / 255;
+                const length = percent * (radius * 0.8);
+                const angle = (Math.PI * 2 * i) / barCount;
+
+                const x1 = cx + Math.cos(angle) * radius;
+                const y1 = cy + Math.sin(angle) * radius;
+                const x2 = cx + Math.cos(angle) * (radius + length);
+                const y2 = cy + Math.sin(angle) * (radius + length);
+
+                canvasCtx.strokeStyle = `hsl(${280 - percent * 100}, 100%, 60%)`; // Purple to Cyan
+                canvasCtx.lineWidth = 4;
+                canvasCtx.beginPath();
+                canvasCtx.moveTo(x1, y1);
+                canvasCtx.lineTo(x2, y2);
+                canvasCtx.stroke();
+            }
+
+            // Inner Wave (Time Domain)
+            canvasCtx.beginPath();
+            canvasCtx.strokeStyle = '#fff';
+            canvasCtx.lineWidth = 2;
+            for(let i=0; i<timeData.length; i+=10) {
+                const v = (timeData[i] - 128) / 128; // -1 to 1
+                const r = radius * 0.6 + (v * 20);
+                const angle = (Math.PI * 2 * i) / timeData.length;
+                const x = cx + Math.cos(angle) * r;
+                const y = cy + Math.sin(angle) * r;
+                if(i===0) canvasCtx.moveTo(x,y);
+                else canvasCtx.lineTo(x,y);
+            }
+            canvasCtx.closePath();
+            canvasCtx.stroke();
+        }
+
+        // Mode 4: Symmetry (Rorschach Style)
+        function drawSymmetry(data, w, h) {
+            canvasCtx.lineWidth = 2;
+            canvasCtx.strokeStyle = '#d500f9'; // Neon Purple
+            canvasCtx.shadowBlur = 10;
+            canvasCtx.shadowColor = '#00ffcc'; // Cyan Glow
+            
+            const cx = w / 2;
+            const cy = h / 2;
+
+            canvasCtx.beginPath();
+            
+            // Draw half, mirror it
+            for (let i = 0; i < data.length; i+=5) {
+                const v = (data[i] - 128) * 1.5; // Amplify
+                const x = (i / data.length) * (w / 2); // Use half width
+                
+                // Top Right
+                if (i===0) canvasCtx.moveTo(cx + x, cy - v);
+                else canvasCtx.lineTo(cx + x, cy - v);
+            }
+            canvasCtx.stroke();
+
+            // Mirror Logic via transforms context logic is complex, simpler to just redraw loop for mirror parts?
+            // Let's use loop for stability.
+            
+            // Bottom Right
+            canvasCtx.beginPath();
+            for (let i = 0; i < data.length; i+=5) {
+                const v = (data[i] - 128) * 1.5;
+                const x = (i / data.length) * (w / 2);
+                if (i===0) canvasCtx.moveTo(cx + x, cy + v);
+                else canvasCtx.lineTo(cx + x, cy + v);
+            }
+            canvasCtx.stroke();
+
+            // Top Left
+            canvasCtx.beginPath();
+            for (let i = 0; i < data.length; i+=5) {
+                const v = (data[i] - 128) * 1.5;
+                const x = (i / data.length) * (w / 2);
+                if (i===0) canvasCtx.moveTo(cx - x, cy - v);
+                else canvasCtx.lineTo(cx - x, cy - v);
+            }
+            canvasCtx.stroke();
+
+            // Bottom Left
+            canvasCtx.beginPath();
+            for (let i = 0; i < data.length; i+=5) {
+                const v = (data[i] - 128) * 1.5;
+                const x = (i / data.length) * (w / 2);
+                if (i===0) canvasCtx.moveTo(cx - x, cy + v);
+                else canvasCtx.lineTo(cx - x, cy + v);
+            }
             canvasCtx.stroke();
         }
 
